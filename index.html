@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatrafy | GenAI Travel Ecosystem</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004c99;
+            --accent: #ff6b6b;
+            --success: #28a745;
+            --bg: #f4f7f6;
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --shadow-card: 0 10px 30px rgba(0,0,0,0.15);
+            --radius: 20px;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); outline: none; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text-main); overflow-x: hidden; }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+            padding: 15px 40px; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .brand { font-size: 1.8rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; cursor: pointer; letter-spacing: -0.5px; }
+        .nav-menu { display: flex; gap: 25px; align-items: center; }
+        
+        .nav-item { 
+            font-weight: 600; color: var(--text-light); cursor: pointer; font-size: 0.9rem; 
+            display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 20px;
+        }
+        .nav-item:hover { background: #eef2f6; color: var(--primary); }
+
+        /* Language & Voice */
+        .lang-container { 
+            display: flex; align-items: center; background: #f1f3f5; border-radius: 30px; 
+            padding: 5px 5px 5px 15px; border: 1px solid #e1e1e1; 
+        }
+        .lang-select { border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: #444; cursor: pointer; max-width: 110px; }
+        .voice-btn { 
+            background: var(--primary); color: white; border: none; width: 34px; height: 34px; 
+            border-radius: 50%; margin-left: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
+        }
+        .voice-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
+        .voice-btn.listening { animation: pulse 1.5s infinite; background: var(--accent); }
+
+        /* Wallet Badge */
+        .wallet-trigger { position: relative; font-size: 1.5rem; color: var(--text-main); background: none; border: none; cursor: pointer; padding: 5px; }
+        .wallet-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; border: 2px solid white; }
+
+        /* --- HERO --- */
+        .hero {
+            background: linear-gradient(135deg, #0066cc, #0052a3); padding: 100px 20px 120px; text-align: center; color: white;
+            border-bottom-left-radius: 60px; border-bottom-right-radius: 60px; margin-bottom: 50px; position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=2000&q=80') center/cover;
+            opacity: 0.1; pointer-events: none; mix-blend-mode: overlay;
+        }
+        .hero h1 { font-size: 3.5rem; margin: 0 0 15px; font-weight: 800; text-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+        .hero p { font-size: 1.25rem; opacity: 0.95; margin-bottom: 40px; font-weight: 300; max-width: 700px; margin-left: auto; margin-right: auto; position: relative; }
+        
+        /* SEARCH BAR WITH SEND ICON */
+        .search-wrapper {
+            max-width: 750px; margin: 0 auto; background: white; border-radius: 50px; padding: 8px 8px 8px 30px; display: flex; align-items: center;
+            box-shadow: 0 25px 60px rgba(0, 50, 100, 0.3); transform: translateY(30px); position: relative;
+        }
+        .search-input { flex: 1; border: none; padding: 15px 10px; font-size: 1.15rem; background: transparent; color: #333; }
+        .search-btn { 
+            width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; 
+            border: none; font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,102,204,0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .search-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
+
+        /* --- FEATURES STRIP --- */
+        .features-strip { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 70px; padding: 0 20px; }
+        .feat-card {
+            background: white; padding: 25px 30px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 130px; border: 1px solid transparent;
+        }
+        .feat-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: rgba(0,102,204,0.1); }
+        .feat-icon { font-size: 2rem; color: var(--primary); background: #eef5ff; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .feat-label { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+
+        /* --- DESTINATIONS GRID (12 Cards) --- */
+        .section-container { max-width: 1400px; margin: 0 auto 80px; padding: 0 30px; }
+        .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; border-bottom: 2px solid #e1e1e1; padding-bottom: 15px; }
+        .section-title { font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 35px; }
+        
+        /* Background Image Card Style */
+        .card {
+            background-color: #ddd; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); 
+            cursor: pointer; position: relative; height: 400px; background-size: cover; background-position: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+        .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+        
+        /* Gradient Overlay for Text Readability */
+        .card-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+            padding: 25px; color: white; display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        
+        .card-tag { 
+            position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);
+            color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.4);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .card-title { font-size: 1.8rem; font-weight: 800; margin: 0 0 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .card-sub { font-size: 0.95rem; opacity: 0.9; font-weight: 400; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* --- LIST VIEW POPUP --- */
+        .list-container { padding: 10px; }
+        .list-item { 
+            padding: 18px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; transition: background 0.2s;
+        }
+        .list-item:hover { background: #f8fbff; padding-left: 25px; }
+        .list-name { font-weight: 700; font-size: 1.1rem; color: var(--text-main); }
+        .list-meta { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+        .list-tag { background: #eef2ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+
+        /* --- MODALS (Shared) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 2000;
+            display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-box {
+            background: white; width: 95%; max-width: 900px; max-height: 90vh; border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3); overflow-y: auto; position: relative; animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .close-btn { position: absolute; top: 25px; right: 25px; font-size: 1.5rem; border: none; background: #f0f2f5; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: #555; z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .close-btn:hover { background: #e4e6e9; color: black; }
+
+        /* --- WIZARD FORM --- */
+        .modal-header { padding: 35px 35px 20px; background: #fff; }
+        .modal-header h2 { margin: 0 0 5px; font-size: 2rem; color: var(--primary); }
+        .modal-body { padding: 10px 35px 35px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color: var(--text-main); }
+        .form-control { 
+            width: 100%; padding: 14px; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; transition: border 0.2s;
+        }
+        .form-control:focus { border-color: var(--primary); background: white; }
+        
+        /* --- ITINERARY OPTIONS --- */
+        .opt-card {
+            border: 2px solid #eee; border-radius: 16px; padding: 25px; margin-bottom: 15px; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;
+        }
+        .opt-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 6px; background: #ddd; transition: width 0.2s; }
+        .opt-card:hover { border-color: var(--primary); background: #f8fbff; }
+        .opt-card:hover::before { width: 8px; background: var(--primary); }
+        .opt-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: var(--text-light); }
+        .opt-price { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+
+        /* --- DASHBOARD TIMELINE --- */
+        .timeline { margin-top: 30px; position: relative; padding-left: 20px; }
+        .t-item { position: relative; padding-bottom: 40px; border-left: 2px solid #e1e1e1; padding-left: 35px; }
+        .t-item::before {
+            content: ''; position: absolute; left: -7px; top: 0; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; outline: 4px solid white;
+        }
+        .t-item:last-child { border-left: 2px solid transparent; }
+        .t-time { font-size: 0.85rem; font-weight: 800; color: var(--text-light); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .t-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .t-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+        .pill { background: #f1f3f5; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
+        .pill.cost { background: #e3f9e5; color: #155724; }
+
+        /* --- BAGGAGE TRACKING --- */
+        .track-status { display: flex; justify-content: space-between; margin: 50px 0; position: relative; }
+        .track-status::before { content: ''; position: absolute; top: 20px; left: 0; width: 100%; height: 4px; background: #eee; z-index: 0; border-radius: 2px; }
+        .step { position: relative; z-index: 1; text-align: center; width: 25%; }
+        .step-dot { width: 45px; height: 45px; background: white; border: 4px solid #eee; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #ccc; }
+        .step.active .step-dot { border-color: var(--success); background: var(--success); color: white; transform: scale(1.1); box-shadow: 0 5px 15px rgba(40,167,69,0.3); }
+        .step-label { font-size: 0.9rem; font-weight: 700; color: var(--text-light); }
+
+        /* --- WALLET (Updated for Approval Flow) --- */
+        .wallet-card { background: white; width: 100%; max-width: 500px; border-radius: 24px; overflow: hidden; }
+        .w-head { background: linear-gradient(135deg, #0066cc, #0052a3); padding: 40px; color: white; text-align: center; position: relative; }
+        .w-head::after { content: ''; position: absolute; bottom: -20px; left: 0; width: 100%; height: 40px; background: white; border-radius: 50% 50% 0 0; }
+        .w-bal { font-size: 3.5rem; font-weight: 800; margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .w-actions { display: flex; justify-content: center; gap: 20px; margin-top: 20px; position: relative; z-index: 2; }
+        .w-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 0.95rem; font-weight: 600; backdrop-filter: blur(5px); }
+        .w-list { padding: 20px 30px 30px; max-height: 450px; overflow-y: auto; }
+        .trans-item { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #f0f0f0; align-items: center; }
+        
+        .approval-view { display: none; text-align: center; padding: 20px; background: #f9fbff; border-radius: 16px; border: 1px solid #e1e1e1; margin-bottom: 20px; }
+        .approval-view h3 { margin-top: 0; color: var(--text-main); }
+        .approval-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 1.1rem; }
+        .approval-actions { display: flex; gap: 15px; margin-top: 20px; }
+
+        /* --- POST SALES --- */
+        .support-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .sup-card { border: 2px solid #f0f0f0; border-radius: 20px; padding: 30px 20px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: all 0.3s; }
+        .sup-card:hover { border-color: var(--primary); background: #f8fbff; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .sup-icon { font-size: 2.2rem; color: var(--primary); margin-bottom: 5px; }
+
+        /* Buttons & Utilities */
+        .btn { padding: 16px 32px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; width: 100%; box-shadow: 0 10px 25px rgba(0,102,204,0.25); }
+        .btn-success { background: var(--success); color: white; width: 100%; box-shadow: 0 10px 25px rgba(40,167,69,0.25); }
+        .btn-danger { background: #dc3545; color: white; width: 100%; }
+        .btn-outline { background: white; border: 2px solid #e1e1e1; color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fbff; }
+
+        .verified-badge { background: #e3f9e5; color: #155724; padding: 8px 16px; border-radius: 30px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #c3e6cb; }
+        .geo-alert { background: #fff8e1; border: 1px solid #ffe082; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; font-weight: 600; color: #856404; }
+        
+        /* Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6); } 70% { box-shadow: 0 0 0 12px rgba(255, 107, 107, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand" onclick="window.location.reload()">
+            <i class="fas fa-paper-plane"></i> Yatrafy
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item" onclick="openModal('baggage-modal')"><i class="fas fa-suitcase-rolling"></i> Baggage AI</div>
+            <div class="nav-item" onclick="openModal('support-modal')"><i class="fas fa-headset"></i> Support</div>
+            
+            <div class="lang-container">
+                <i class="fas fa-globe" style="color:#666; margin-right:5px;"></i>
+                <select class="lang-select" id="langSelector">
+                    <optgroup label="Indian Languages (22)">
+                        <option>English (India)</option><option>Hindi</option><option>Bengali</option><option>Telugu</option><option>Marathi</option><option>Tamil</option><option>Urdu</option><option>Gujarati</option><option>Kannada</option><option>Malayalam</option><option>Odia</option><option>Punjabi</option><option>Assamese</option><option>Maithili</option><option>Santali</option><option>Kashmiri</option><option>Nepali</option><option>Konkani</option><option>Sindhi</option><option>Dogri</option><option>Manipuri</option><option>Bodo</option><option>Sanskrit</option>
+                    </optgroup>
+                    <optgroup label="International (15)">
+                        <option>Spanish</option><option>French</option><option>German</option><option>Chinese</option><option>Japanese</option><option>Russian</option><option>Arabic</option><option>Portuguese</option><option>Italian</option><option>Korean</option><option>Turkish</option><option>Dutch</option><option>Thai</option><option>Vietnamese</option><option>Indonesian</option>
+                    </optgroup>
+                </select>
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()"><i class="fas fa-microphone"></i></button>
+            </div>
+
+            <button class="wallet-trigger" onclick="openModal('wallet-modal')">
+                <i class="fas fa-wallet" style="font-size:1.5rem; color:var(--primary);"></i>
+                <div class="wallet-badge"></div>
+            </button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>GenAI-Powered Travel Planning</h1>
+        <p>From Idea to Execution. Personalized Itineraries, Automated Booking & Smart Wallets.</p>
+        
+        <div class="search-wrapper">
+            <input type="text" class="search-input" id="aiSearch" placeholder="Ask Yatrafy: 'Solo female trip to Vietnam in October'..." onkeypress="handleSearch(event)">
+            <button class="search-btn" onclick="triggerSearch()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="features-strip">
+        <div class="feat-card" onclick="openModal('baggage-modal')"><div class="feat-icon"><i class="fas fa-luggage-cart"></i></div><span class="feat-label">Track Bag</span></div>
+        <div class="feat-card"><div class="feat-icon"><i class="fas fa-campground"></i></div><span class="feat-label">Glamping</span></div>
+        <div class="feat-card"><div class="feat-icon"><i class="fas fa-tractor"></i></div><span class="feat-label">Farm Stays</span></div>
+        <div class="feat-card"><div class="feat-icon"><i class="fas fa-plane-departure"></i></div><span class="feat-label">Bookings</span></div>
+        <div class="feat-card" onclick="openModal('wallet-modal')"><div class="feat-icon"><i class="fas fa-wallet"></i></div><span class="feat-label">Wallet</span></div>
+        <div class="feat-card" onclick="openModal('support-modal')"><div class="feat-icon"><i class="fas fa-life-ring"></i></div><span class="feat-label">Support</span></div>
+    </div>
+
+    <section class="section-container">
+        <div class="section-header">
+            <div class="section-title">Trending Destinations</div>
+            <div style="color:var(--primary); font-weight:700; cursor:pointer" onclick="showAll()">View All Locations <i class="fas fa-arrow-right"></i></div>
+        </div>
+        <div class="grid" id="destGrid">
+            </div>
+    </section>
+
+    <div class="modal-overlay" id="wizard-modal">
+        <div class="modal-box" style="max-width:700px">
+            <button class="close-btn" onclick="closeModal('wizard-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>Plan Your Trip: <span id="wiz-dest" style="color:var(--primary)">...</span></h2>
+                <p style="color:#666; margin:5px 0 0;">Gemini AI will craft 3 unique personalized itineraries.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (Days)</label>
+                        <input type="number" class="form-control" id="inp-days" value="3">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Travelers</label>
+                        <input type="number" class="form-control" id="inp-pax" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Est. Budget (₹)</label>
+                        <input type="number" class="form-control" id="inp-budget" placeholder="25000">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Mode of Travel</label>
+                    <select class="form-control">
+                        <option>Flight + Private Transfer</option>
+                        <option>Train + Local Cab</option>
+                        <option>Self Drive</option>
+                        <option>Luxury Bus</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:30px;">
+                    <label>Subjective Preferences (AI Analysis)</label>
+                    <textarea class="form-control" rows="3" placeholder="E.g., We love vegan food, history, and want a relaxed pace. Avoid crowds."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="generateItineraries()">Generate Itineraries <i class="fas fa-magic" style="margin-left:8px;"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="options-modal">
+        <div class="modal-box" style="max-width:650px">
+            <button class="close-btn" onclick="closeModal('options-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>Select Your Vibe</h2>
+                <p style="color:#666;">AI generated these options based on your preferences and budget.</p>
+            </div>
+            <div class="modal-body" id="options-container">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="dashboard-modal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('dashboard-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee;">
+                <div>
+                    <h2 id="dash-title" style="margin:0">Itinerary Details</h2>
+                    <div class="verified-badge" style="margin-top:10px;"><i class="fas fa-shield-alt"></i> QCI Verified & Safety Audited</div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:0.9rem; color:#666; margin-bottom:5px;">Total Estimate</div>
+                    <div style="font-size:2.2rem; font-weight:800; color:var(--primary)">₹<span id="dash-total">0</span></div>
+                </div>
+            </div>
+            <div class="modal-body">
+                
+                <div class="geo-alert">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-map-marker-alt" style="font-size:1.2rem;"></i>
+                        <div>
+                            <div>Geo-Triggered Wake Up Call</div>
+                            <div style="font-size:0.8rem; font-weight:400; opacity:0.8;">Alert user when 10km from destination</div>
+                        </div>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked> <span class="slider round"></span></label>
+                </div>
+
+                <div id="dash-timeline" class="timeline"></div>
+
+                <div style="background:#f9fafb; padding:25px; border-radius:16px; margin-top:30px; border:2px solid #f0f0f0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:700; align-items:center;">
+                        <span style="font-size:1.1rem; display:flex; align-items:center; gap:10px;"><i class="fas fa-user-friends" style="color:var(--primary);"></i> Add Local Travel Guide?</span>
+                        <input type="checkbox" id="guide-check" style="transform:scale(1.5); cursor:pointer;" onchange="toggleGuide()">
+                    </div>
+                    <div id="guide-options" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                        <div class="form-grid">
+                            <div>
+                                <label>Your Gender (Safety Match)</label>
+                                <select class="form-control"><option>Female</option><option>Male</option><option>Other</option></select>
+                            </div>
+                            <div>
+                                <label>Guide Preference</label>
+                                <div style="display:flex; gap:10px;">
+                                    <button class="btn btn-outline" style="flex:1; font-weight:600;" onclick="setGuide(800)">Any (₹800)</button>
+                                    <button class="btn btn-outline" style="flex:1; font-weight:600;" onclick="setGuide(1200)">Female Expert (₹1200)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:30px; display:flex; gap:15px;">
+                    <button class="btn btn-outline" style="flex:1" onclick="alert('Edit mode: Drag & drop items enabled.')"><i class="fas fa-pen"></i> Customize</button>
+                    <button class="btn btn-success" style="flex:2" onclick="initiatePaymentFlow()">Finalize & Pay <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="wallet-modal">
+        <div class="wallet-card">
+            <button class="close-btn" style="color:white; z-index:20; background:rgba(0,0,0,0.2);" onclick="closeModal('wallet-modal')"><i class="fas fa-times"></i></button>
+            <div class="w-head">
+                <div style="font-weight:600; opacity:0.9;">Yatrafy Programmable Wallet</div>
+                <div class="w-bal">₹ <span id="wallet-bal">45,200</span></div>
+                <div class="w-actions">
+                    <button class="w-btn" onclick="addMoney()"><i class="fas fa-plus"></i> Add Money</button>
+                    <button class="w-btn"><i class="fas fa-gift"></i> Vouchers</button>
+                </div>
+            </div>
+            <div class="w-list">
+                
+                <div id="approval-view" class="approval-view">
+                    <h3><i class="fas fa-shield-alt" style="color:var(--primary)"></i> Approve Transaction</h3>
+                    <p style="color:#666; margin-bottom:20px;">You are about to pay for your trip to <strong id="appr-dest">...</strong></p>
+                    
+                    <div class="approval-row">
+                        <span>Total Amount</span>
+                        <strong style="color:var(--text-main)">₹<span id="appr-amt">0</span></strong>
+                    </div>
+                    <div class="approval-row">
+                        <span>Wallet Balance</span>
+                        <strong style="color:var(--success)">₹<span id="appr-bal">0</span></strong>
+                    </div>
+                    
+                    <div class="approval-actions">
+                        <button class="btn btn-danger" onclick="cancelPayment()">Deny</button>
+                        <button class="btn btn-success" onclick="confirmPayment()">Approve & Pay</button>
+                    </div>
+                </div>
+
+                <h4 style="margin-top:0; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; font-size:0.8rem;">Transaction History</h4>
+                <div id="transaction-list">
+                    <div class="trans-item">
+                        <div style="display:flex; align-items:center;">
+                            <div class="trans-icon"><i class="fas fa-plane"></i></div>
+                            <div>
+                                <div style="font-weight:700; color:var(--text-main);">Flight Refund</div>
+                                <div style="font-size:0.8rem; color:#888">24 Oct, 2024</div>
+                            </div>
+                        </div>
+                        <div style="color:var(--success); font-weight:bold;">+ ₹5,400</div>
+                    </div>
+                    <div class="trans-item">
+                        <div style="display:flex; align-items:center;">
+                            <div class="trans-icon"><i class="fas fa-hotel"></i></div>
+                            <div>
+                                <div style="font-weight:700; color:var(--text-main);">Taj Resort Booking</div>
+                                <div style="font-size:0.8rem; color:#888">12 Oct, 2024</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:bold; color:var(--text-main);">- ₹8,200</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="baggage-modal">
+        <div class="modal-box" style="max-width:600px">
+            <button class="close-btn" onclick="closeModal('baggage-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>GenAI Baggage Tracker</h2>
+                <p>Real-time updates to prevent displacement.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Number of Bags</label>
+                        <input type="number" class="form-control" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Luggage Type</label>
+                        <select class="form-control"><option>Check-in + Cabin</option><option>Cabin Only</option><option>Oversized</option></select>
+                    </div>
+                </div>
+                <div style="margin-top:40px;">
+                    <h4 style="margin-bottom:30px; display:flex; justify-content:space-between;">
+                        <span>Live Status</span>
+                        <span style="color:var(--primary); font-size:0.9rem;">PNR: YAT-8829</span>
+                    </h4>
+                    <div class="track-status">
+                        <div class="step active"><div class="step-dot"><i class="fas fa-check"></i></div><div class="step-label">Check-in</div></div>
+                        <div class="step active"><div class="step-dot"><i class="fas fa-shield-alt"></i></div><div class="step-label">Security</div></div>
+                        <div class="step active"><div class="step-dot"><i class="fas fa-plane-departure"></i></div><div class="step-label">Loaded</div></div>
+                        <div class="step"><div class="step-dot"><i class="fas fa-conveyor-belt"></i></div><div class="step-label">Belt 4</div></div>
+                    </div>
+                    <div style="background:#f0f7ff; padding:15px; border-radius:10px; border-left:4px solid var(--primary); font-size:0.9rem; margin-top:30px; display:flex; gap:10px;">
+                        <i class="fas fa-robot" style="color:var(--primary); font-size:1.2rem;"></i>
+                        <div><strong>AI Prediction:</strong> Baggage will arrive at Belt 4 in approx 15 mins based on current handling speed.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="support-modal">
+        <div class="modal-box" style="max-width:750px">
+            <button class="close-btn" onclick="closeModal('support-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>Post-Sales Support Hub</h2>
+                <p>Manage your trips, feedback, and claims with one touch.</p>
+            </div>
+            <div class="modal-body">
+                <div class="support-grid">
+                    <div class="sup-card" onclick="alert('Opening AI Chat...')">
+                        <div class="sup-icon"><i class="fas fa-robot"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">24/7 AI Chat</div>
+                        <div style="font-size:0.85rem; color:#666">Instant resolution</div>
+                    </div>
+                    <div class="sup-card">
+                        <div class="sup-icon"><i class="fas fa-undo-alt"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">Refunds</div>
+                        <div style="font-size:0.85rem; color:#666">Track status</div>
+                    </div>
+                    <div class="sup-card">
+                        <div class="sup-icon"><i class="fas fa-star"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">Reviews</div>
+                        <div style="font-size:0.85rem; color:#666">Rate your stay</div>
+                    </div>
+                    <div class="sup-card">
+                        <div class="sup-icon"><i class="fas fa-exclamation-circle"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">Complaints</div>
+                        <div style="font-size:0.85rem; color:#666">Raise a ticket</div>
+                    </div>
+                    <div class="sup-card">
+                        <div class="sup-icon"><i class="fas fa-calendar-plus"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">Book Again</div>
+                        <div style="font-size:0.85rem; color:#666">Repeat trip</div>
+                    </div>
+                    <div class="sup-card">
+                        <div class="sup-icon"><i class="fab fa-whatsapp"></i></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">WhatsApp</div>
+                        <div style="font-size:0.85rem; color:#666">Connect now</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="all-destinations-modal">
+        <div class="modal-box" style="max-width:600px">
+            <button class="close-btn" onclick="closeModal('all-destinations-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2>All Destinations</h2>
+                <p>Browse our complete list of 740+ locations.</p>
+                <input type="text" class="form-control" placeholder="Filter list..." onkeyup="filterList(this.value)" style="margin-top:10px;">
+            </div>
+            <div class="modal-body" id="full-list-container">
+                </div>
+        </div>
+    </div>
+
+<script>
+    // --- 745 DESTINATIONS DATA (Embedded from CSV) ---
+    // Note: This data array is generated from the Python processing step.
+    const allDestinations = [{"name": "Agra", "country": "India", "cat": "Heritage/History", "time": "Oct-Mar", "usp": "Taj Mahal; Agra Fort; Fatehpur Sikri; Mehtab Bagh"}, {"name": "Jaipur", "country": "India", "cat": "Heritage/Culture", "time": "Oct-Mar", "usp": "Amber Fort; Hawa Mahal; City Palace; Jantar Mantar"}, {"name": "Varanasi", "country": "India", "cat": "Spiritual/Culture", "time": "Oct-Mar", "usp": "Kashi Vishwanath Temple; Dashashwamedh Ghat; Sarnath; Assi Ghat"}, {"name": "Goa", "country": "India", "cat": "Beach/Nature", "time": "Nov-Feb", "usp": "Calangute Beach; Basilica of Bom Jesus; Dudhsagar Falls; Fort Aguada"}, {"name": "Kerala (Alleppey)", "country": "India", "cat": "Nature/Backwaters", "time": "Sep-Mar", "usp": "Houseboats; Alappuzha Beach; Marari Beach; Krishnapuram Palace"}, {"name": "Munnar", "country": "India", "cat": "Hill Station/Nature", "time": "Sep-Mar", "usp": "Tea Gardens; Mattupetty Dam; Eravikulam National Park; Anamudi"}, {"name": "Udaipur", "country": "India", "cat": "Heritage/Romance", "time": "Sep-Mar", "usp": "City Palace; Lake Pichola; Jag Mandir; Saheliyon Ki Bari"}, {"name": "Ladakh (Leh)", "country": "India", "cat": "Adventure/Nature", "time": "Jun-Sep", "usp": "Pangong Lake; Nubra Valley; Thiksey Monastery; Khardung La"}, {"name": "Rishikesh", "country": "India", "cat": "Spiritual/Adventure", "time": "Sep-Jun", "usp": "Laxman Jhula; Triveni Ghat; Beatles Ashram; River Rafting Points"}, {"name": "Amritsar", "country": "India", "cat": "Spiritual/History", "time": "Nov-Mar", "usp": "Golden Temple; Jallianwala Bagh; Wagah Border; Partition Museum"}, {"name": "Jaisalmer", "country": "India", "cat": "Desert/Heritage", "time": "Nov-Mar", "usp": "Jaisalmer Fort; Sam Sand Dunes; Patwon Ki Haveli; Gadisar Lake"}, {"name": "Hampi", "country": "India", "cat": "History/Architecture", "time": "Oct-Mar", "usp": "Virupaksha Temple; Vittala Temple; Stone Chariot; Hippie Island"}, {"name": "Ooty", "country": "India", "cat": "Hill Station/Nature", "time": "Oct-Jun", "usp": "Nilgiri Mountain Railway; Ooty Lake; Botanical Gardens; Doddabetta Peak"}, {"name": "Mysore", "country": "India", "cat": "Heritage/Culture", "time": "Oct-Mar", "usp": "Mysore Palace; Chamundi Hill; Brindavan Gardens; Mysore Zoo"}, {"name": "Andaman (Havelock)", "country": "India", "cat": "Beach/Adventure", "time": "Oct-May", "usp": "Radhanagar Beach; Elephant Beach; Scuba Diving; Cellular Jail (Port Blair)"}, {"name": "Srinagar", "country": "India", "cat": "Nature/Culture", "time": "Apr-Oct", "usp": "Dal Lake; Mughal Gardens; Shankaracharya Temple; Houseboats"}, {"name": "Darjeeling", "country": "India", "cat": "Hill Station/Nature", "time": "Apr-Jun", "usp": "Tiger Hill; Batasia Loop; Darjeeling Himalayan Railway; Tea Estates"}, {"name": "Gangtok", "country": "India", "cat": "Hill Station/Culture", "time": "Mar-Jun", "usp": "Nathula Pass; MG Marg; Rumtek Monastery; Tsomgo Lake"}, {"name": "Pondicherry", "country": "India", "cat": "Beach/Spiritual", "time": "Oct-Mar", "usp": "Promenade Beach; Auroville; Sri Aurobindo Ashram; French Quarter"}, {"name": "Khajuraho", "country": "India", "cat": "Heritage/Art", "time": "Oct-Mar", "usp": "Western Group of Temples; Light and Sound Show; Kandariya Mahadeva Temple"}, {"name": "Mahabalipuram", "country": "India", "cat": "History/Beach", "time": "Nov-Feb", "usp": "Shore Temple; Pancha Rathas; Descent of the Ganges; Krishna's Butterball"}, {"name": "Madurai", "country": "India", "cat": "Spiritual/Culture", "time": "Oct-Mar", "usp": "Meenakshi Amman Temple; Thirumalai Nayakkar Mahal; Vaigai River"}, {"name": "Rameswaram", "country": "India", "cat": "Spiritual/History", "time": "Oct-Mar", "usp": "Ramanathaswamy Temple; Dhanushkodi; Pamban Bridge; Agni Theertham"}, {"name": "Kanyakumari", "country": "India", "cat": "Coastal/Spiritual", "time": "Oct-Mar", "usp": "Vivekananda Rock Memorial; Thiruvalluvar Statue; Kanyakumari Beach; Sunset View"}, {"name": "Coorg", "country": "India", "cat": "Nature/Coffee", "time": "Oct-Mar", "usp": "Abbey Falls; Dubare Elephant Camp; Raja's Seat; Coffee Plantations"}, {"name": "Gokarna", "country": "India", "cat": "Beach/Spiritual", "time": "Oct-Mar", "usp": "Om Beach; Kudle Beach; Mahabaleshwar Temple; Half Moon Beach"}, {"name": "Hyderabad", "country": "India", "cat": "Heritage/City", "time": "Oct-Mar", "usp": "Charminar; Golconda Fort; Ramoji Film City; Hussain Sagar Lake"}, {"name": "Kolkata", "country": "India", "cat": "Culture/History", "time": "Oct-Mar", "usp": "Victoria Memorial; Howrah Bridge; Dakshineswar Kali Temple; Park Street"}, {"name": "Sundarbans", "country": "India", "cat": "Wildlife/Nature", "time": "Sep-Mar", "usp": "Royal Bengal Tigers; Mangrove Forests; Boat Safari; Watch Towers"}, {"name": "Shillong", "country": "India", "cat": "Nature/Culture", "time": "Mar-Jun", "usp": "Umiam Lake; Elephant Falls; Shillong Peak; Don Bosco Museum"}, {"name": "Cherrapunji", "country": "India", "cat": "Nature/Adventure", "time": "Oct-May", "usp": "Living Root Bridges; Nohkalikai Falls; Mawsmai Cave; Double Decker Bridge"}, {"name": "Kaziranga", "country": "India", "cat": "Wildlife/Nature", "time": "Nov-Apr", "usp": "One-Horned Rhinoceros; Jeep Safari; Elephant Safari; Bird Watching"}, {"name": "Tawang", "country": "India", "cat": "Spiritual/Nature", "time": "Mar-Jun", "usp": "Tawang Monastery; Sela Pass; Madhuri Lake; War Memorial"}, {"name": "Nainital", "country": "India", "cat": "Hill Station/Lake", "time": "Mar-Jun", "usp": "Naini Lake; Naina Devi Temple; Snow View Point; Mall Road"}, {"name": "Jim Corbett", "country": "India", "cat": "Wildlife/Nature", "time": "Nov-Jun", "usp": "Jungle Safari; Tiger Spotting; Corbett Waterfall; Garjia Temple"}, {"name": "Mussoorie", "country": "India", "cat": "Hill Station/Nature", "time": "Mar-Jun", "usp": "Kempty Falls; Gun Hill; Mall Road; Lal Tibba"}, {"name": "Haridwar", "country": "India", "cat": "Spiritual/Culture", "time": "Oct-Mar", "usp": "Har Ki Pauri; Ganga Aarti; Chandi Devi Temple; Mansa Devi Temple"}, {"name": "Manali", "country": "India", "cat": "Hill Station/Adventure", "time": "Oct-Jun", "usp": "Solang Valley; Rohtang Pass; Hidimba Temple; Old Manali"}, {"name": "Shimla", "country": "India", "cat": "Hill Station/Heritage", "time": "Mar-Jun", "usp": "The Ridge; Mall Road; Jakhu Temple; Christ Church"}, {"name": "Dharamshala", "country": "India", "cat": "Spiritual/Nature", "time": "Mar-Jun", "usp": "McLeod Ganj; Dalai Lama Temple; Triund Trek; Bhagsu Falls"}, {"name": "Dalhousie", "country": "India", "cat": "Hill Station/Nature", "time": "Mar-Jun", "usp": "Khajjiar; Panchpula; Kalatop Wildlife Sanctuary; Dainkund Peak"}, {"name": "Spiti Valley", "country": "India", "cat": "Adventure/Nature", "time": "Jun-Sep", "usp": "Key Monastery; Chandratal Lake; Pin Valley National Park; Kunzum Pass"}, {"name": "Jodhpur", "country": "India", "cat": "Heritage/History", "time": "Oct-Mar", "usp": "Mehrangarh Fort; Umaid Bhawan Palace; Jaswant Thada; Blue City Streets"}, {"name": "Mount Abu", "country": "India", "cat": "Hill Station/Spiritual", "time": "Year-round", "usp": "Dilwara Temples; Nakki Lake; Guru Shikhar; Sunset Point"}, {"name": "Ranthambore", "country": "India", "cat": "Wildlife/History", "time": "Oct-Jun", "usp": "Tiger Safari; Ranthambore Fort; Padam Talao; Trinetra Ganesh Temple"}, {"name": "Pushkar", "country": "India", "cat": "Spiritual/Culture", "time": "Oct-Mar", "usp": "Pushkar Lake; Brahma Temple; Camel Fair; Savitri Mata Temple"}, {"name": "Ajanta & Ellora", "country": "India", "cat": "History/Art", "time": "Oct-Mar", "usp": "Rock-cut Caves; Kailasa Temple; Buddhist Paintings; UNESCO Site"}, {"name": "Mumbai", "country": "India", "cat": "City/Heritage", "time": "Oct-Mar", "usp": "Gateway of India; Marine Drive; Elephanta Caves; Juhu Beach"}, {"name": "Pune", "country": "India", "cat": "City/Culture", "time": "Oct-Mar", "usp": "Shaniwar Wada; Aga Khan Palace; Sinhagad Fort; Osho Ashram"}, {"name": "Lonavala", "country": "India", "cat": "Hill Station/Nature", "time": "Jun-Sep", "usp": "Tiger's Leap; Bhushi Dam; Karla Caves; Lohagad Fort"}, {"name": "Mahabaleshwar", "country": "India", "cat": "Hill Station/Nature", "time": "Oct-Jun", "usp": "Venna Lake; Pratapgad Fort; Mapro Garden; Elephant's Head Point"}, {"name": "Nashik", "country": "India", "cat": "Spiritual/Wine", "time": "Oct-Mar", "usp": "Sula Vineyards; Trimbakeshwar Temple; Panchvati; Ram Kund"}, {"name": "Shirdi", "country": "India", "cat": "Spiritual", "time": "Year-round", "usp": "Sai Baba Temple; Dwarkamai; Chavadi; Sai Heritage Village"}, {"name": "Dwarka", "country": "India", "cat": "Spiritual/History", "time": "Oct-Mar", "usp": "Dwarkadhish Temple; Nageshwar Jyotirlinga; Bet Dwarka; Rukmini Devi Temple"}, {"name": "Somnath", "country": "India", "cat": "Spiritual/History", "time": "Oct-Mar", "usp": "Somnath Temple; Triveni Sangam; Bhalka Tirth; Somnath Beach"}, {"name": "Rann of Kutch", "country": "India", "cat": "Nature/Culture", "time": "Nov-Feb", "usp": "White Desert; Rann Utsav; Kala Dungar; Wild Ass Sanctuary"}, {"name": "Gir National Park", "country": "India", "cat": "Wildlife/Nature", "time": "Dec-Mar", "usp": "Asiatic Lions; Jeep Safari; Kamleshwar Dam; Kankai Mata Temple"}, {"name": "Ahmedabad", "country": "India", "cat": "Heritage/City", "time": "Oct-Mar", "usp": "Sabarmati Ashram; Adalaj Stepwell; Kankaria Lake; Akshardham Temple"}, {"name": "Statue of Unity", "country": "India", "cat": "Monument/Modern", "time": "Oct-Mar", "usp": "World's Tallest Statue; Valley of Flowers; Sardar Sarovar Dam; Viewing Gallery"}, {"name": "Ziro Valley", "country": "India", "cat": "Nature/Culture", "time": "Mar-Oct", "usp": "Ziro Music Festival; Talley Valley; Pine Groves; Apatani Villages"}, {"name": "Djukou Valley", "country": "India", "cat": "Trekking/Nature", "time": "Jun-Sep", "usp": "Djukou Lily; Japfu Peak; Trekking Trails; Khonoma Village"}, {"name": "Mawlynnong", "country": "India", "cat": "Eco-Tourism", "time": "Year-round", "usp": "Cleanest Village in Asia; Living Root Bridge; Sky Walk; Balancing Rock"}, {"name": "Dawki", "country": "India", "cat": "Nature/River", "time": "Oct-Apr", "usp": "Umngot River (Crystal Clear Water); Boating; Bangladesh Border; Camping"}, {"name": "Majuli", "country": "India", "cat": "Island/Culture", "time": "Oct-Mar", "usp": "Largest River Island; Satras (Monasteries); Assamese Culture; Bird Watching"}, {"name": "Loktak Lake", "country": "India", "cat": "Nature/Lake", "time": "Oct-Mar", "usp": "Floating Phumdis; Keibul Lamjao National Park; Sendra Island; Boating"}, {"name": "Aizawl", "country": "India", "cat": "Hill Station/Culture", "time": "Oct-Mar", "usp": "Reiek Peak; Durtlang Hills; Solomon's Temple; Mizoram State Museum"}, {"name": "Agartala", "country": "India", "cat": "Heritage/City", "time": "Oct-Mar", "usp": "Ujjayanta Palace; Neermahal; Sepahijala Wildlife Sanctuary; Heritage Park"}, {"name": "Unakoti", "country": "India", "cat": "History/Art", "time": "Oct-Mar", "usp": "Rock Carvings; Shiva Head; Ancient Shaivite Site; Trekking"}, {"name": "Konark", "country": "India", "cat": "Heritage/Architecture", "time": "Oct-Mar", "usp": "Sun Temple; Chandrabhaga Beach; Light and Sound Show; ASI Museum"}, {"name": "Puri", "country": "India", "cat": "Spiritual/Beach", "time": "Oct-Mar", "usp": "Jagannath Temple; Golden Beach; Rath Yatra; Swargadwar"}, {"name": "Chilika Lake", "country": "India", "cat": "Nature/Birding", "time": "Oct-Mar", "usp": "Irrawaddy Dolphins; Nalabana Bird Sanctuary; Kalijai Temple; Boating"}, {"name": "Bhubaneswar", "country": "India", "cat": "Heritage/City", "time": "Oct-Mar", "usp": "Lingaraj Temple; Udayagiri & Khandagiri Caves; Nandankanan Zoo; Dhauli"}, {"name": "Simlipal", "country": "India", "cat": "Wildlife/Nature", "time": "Nov-Jun", "usp": "Tiger Reserve; Barehipani Falls; Joranda Falls; Jeep Safari"}, {"name": "Deoghar", "country": "India", "cat": "Spiritual", "time": "Oct-Mar", "usp": "Baidyanath Temple (Jyotirlinga); Trikut Pahar; Tapovan; Nandan Pahar"}, {"name": "Ranchi", "country": "India", "cat": "Nature/Waterfalls", "time": "Sep-Mar", "usp": "Hundru Falls; Jonha Falls; Dassam Falls; Patratu Valley"}, {"name": "Netarhat", "country": "India", "cat": "Hill Station", "time": "Year-round", "usp": "Queen of Chotanagpur; Magnolia Sunset Point; Upper Ghaghri Falls; Koel View Point"}, {"name": "Betla National Park", "country": "India", "cat": "Wildlife/History", "time": "Oct-May", "usp": "Tiger Reserve; Palamau Fort; Elephant Safari; Lodh Falls"}, {"name": "Gaya", "country": "India", "cat": "Spiritual", "time": "Oct-Mar", "usp": "Vishnupad Temple; Pind Daan; Mangla Gauri Temple; Bodh Gaya nearby"}, {"name": "Bodh Gaya", "country": "India", "cat": "Spiritual/Heritage", "time": "Oct-Mar", "usp": "Mahabodhi Temple; Bodhi Tree; Great Buddha Statue; Monasteries"}, {"name": "Nalanda", "country": "India", "cat": "History/Education", "time": "Oct-Mar", "usp": "Nalanda University Ruins; Archaeological Museum; Xuanzang Memorial; Hiuen Tsang"}, {"name": "Rajgir", "country": "India", "cat": "History/Nature", "time": "Oct-Mar", "usp": "Vishwa Shanti Stupa; Hot Springs; Gridhakuta Hill; Cyclopean Wall"}, {"name": "Patna", "country": "India", "cat": "History/City", "time": "Oct-Mar", "usp": "Golghar; Patna Museum; Bihar Museum; Takht Sri Patna Sahib"}, {"name": "Valmiki National Park", "country": "India", "cat": "Wildlife/Nature", "time": "Nov-Jun", "usp": "Tiger Reserve; Jungle Safari; Gandak River; Bird Watching"}, {"name": "Lucknow", "country": "India", "cat": "Heritage/Food", "time": "Oct-Mar", "usp": "Bara Imambara; Rumi Darwaza; Hazratganj; Awadhi Cuisine"}, {"name": "Ayodhya", "country": "India", "cat": "Spiritual/Heritage", "time": "Oct-Mar", "usp": "Ram Janmabhoomi; Hanuman Garhi; Sarayu River Ghats; Kanak Bhawan"}, {"name": "Prayagraj", "country": "India", "cat": "Spiritual/History", "time": "Oct-Mar", "usp": "Triveni Sangam; Kumbh Mela; Allahabad Fort; Anand Bhavan"}, {"name": "Mathura & Vrindavan", "country": "India", "cat": "Spiritual", "time": "Oct-Mar", "usp": "Krishna Janmabhoomi; Banke Bihari Temple; Prem Mandir; ISKCON Temple"}, {"name": "Chitrakoot", "country": "India", "cat": "Spiritual/Nature", "time": "Oct-Mar", "usp": "Ramghat; Kamadgiri; Gupt Godavari; Hanuman Dhara"}, {"name": "Jhansi", "country": "India", "cat": "History", "time": "Oct-Mar", "usp": "Jhansi Fort; Rani Mahal; Government Museum; Sound & Light Show"}, {"name": "Gwalior", "country": "India", "cat": "Heritage/History", "time": "Oct-Mar", "usp": "Gwalior Fort; Jai Vilas Palace; Saas Bahu Temple; Sun Temple"}, {"name": "Orchha", "country": "India", "cat": "Heritage/History", "time": "Oct-Mar", "usp": "Orchha Fort; Jahangir Mahal; Ram Raja Temple; Cenotaphs (Chhatris)"}, {"name": "Bhopal", "country": "India", "cat": "History/Nature", "time": "Oct-Mar", "usp": "Upper Lake; Van Vihar; Sanchi Stupa (nearby); Bhimbetka Caves"}, {"name": "Pachmarhi", "country": "India", "cat": "Hill Station", "time": "Year-round", "usp": "Bee Falls; Jata Shankar Caves; Dhoopgarh; Satpura National Park"}, {"name": "Kanha National Park", "country": "India", "cat": "Wildlife", "time": "Oct-Jun", "usp": "Tiger Safari; Barasingha; Jungle Book Setting; Bamni Dadar"}, {"name": "Bandhavgarh", "country": "India", "cat": "Wildlife/History", "time": "Oct-Jun", "usp": "Highest Tiger Density; Bandhavgarh Fort; Jeep Safari; Ancient Caves"}, {"name": "Pench", "country": "India", "cat": "Wildlife", "time": "Oct-Jun", "usp": "Tiger Reserve; Jungle Safari; Mowgli Land; Night Safari"}, {"name": "Jabalpur", "country": "India", "cat": "Nature", "time": "Sep-Mar", "usp": "Dhuandhar Falls; Marble Rocks (Bhedaghat); Chausath Yogini Temple; Boat Ride"}, {"name": "Mandu", "country": "India", "cat": "Heritage/Romance", "time": "Jul-Mar", "usp": "Jahaz Mahal; Rani Roopmati Pavilion; Baz Bahadur Palace; Hindola Mahal"}, {"name": "Indore", "country": "India", "cat": "Food/Heritage", "time": "Oct-Mar", "usp": "Rajwada Palace; Sarafa Bazaar (Street Food); Lal Bagh Palace; Chappan Dukan"}, {"name": "Ujjain", "country": "India", "cat": "Spiritual", "time": "Oct-Mar", "usp": "Mahakaleshwar Jyotirlinga; Ram Ghat; Kal Bhairav Temple; Kumbh Mela"}, {"name": "Raipur", "country": "India", "cat": "City/Culture", "time": "Oct-Mar", "usp": "Mahant Ghasidas Museum; Nandan Van Zoo; Swami Vivekananda Sarovar"}, {"name": "Jagdalpur", "country": "India", "cat": "Nature/Tribal", "time": "Oct-Mar", "usp": "Chitrakote Falls; Tirathgarh Falls; Bastar Palace; Kanger Valley National Park"}, {"name": "Mainpat", "country": "India", "cat": "Hill Station", "time": "Oct-Mar", "usp": "Shimla of Chhattisgarh; Tibetan Monasteries; Tiger Point; Jaljali"}, {"name": "Kanker", "country": "India", "cat": "Heritage/Nature", "time": "Oct-Mar", "usp": "Kanker Palace; Gadiya Mountain; Malanjhkudum Falls; Tribal Villages"}]; // Truncated for brevity (Logic supports 745)
+
+    let currentTrip = { dest: "", baseCost: 0, guideCost: 0, days: 3 };
+    let walletBalance = 45200;
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        renderSpecificDestinations();
+    };
+
+    // Render EXACTLY the 12 Requested Destinations
+    // function renderSpecificDestinations() {
+    //     const grid = document.getElementById("destGrid");
+    //     const specificNames = [
+    //         "Netarhat", "Coorg", "Almaty", "Oslo", 
+    //         "Athens", "Galapagos", "Alexandria", "Mandi", 
+    //         "Madrid", "Sofia", "Kyoto", "Munich"
+    //     ];
+
+    //     let html = "";
+    //     specificNames.forEach(name => {
+    //         // Find detail if exists in DB, else mock it
+    //         let d = allDestinations.find(item => item.name.includes(name)) || { 
+    //             name: name, cat: "Popular", time: "Year-round", usp: "Top rated destination" 
+    //         };
+
+    //         // High Quality Unsplash Images for these specific 12
+    //         // Note: For a real app, these would be local assets or CDN links.
+    //         const imgUrl = `https://source.unsplash.com/600x800/?${name},landmark`;
+            
+    //         html += `
+    //             <div class="card" onclick="openWizard('${d.name}')" style="background-image: url('${imgUrl}'), url('https://via.placeholder.com/400x300/333/fff?text=${d.name}')">
+    //                 <div class="card-overlay">
+    //                     <div class="card-tag">${d.cat.split('/')[0]}</div>
+    //                     <h3 class="card-title">${d.name}</h3>
+    //                     <div class="card-sub"><i class="far fa-calendar-alt"></i> ${d.time}</div>
+    //                 </div>
+    //             </div>
+    //         `;
+    //     });
+    //     grid.innerHTML = html;
+    // }
+
+    // Render EXACTLY the 12 Requested Destinations
+    function renderSpecificDestinations() {
+        const grid = document.getElementById("destGrid");
+        
+        // Curated high-quality images for each destination
+        const destinationImages = {
+            "Netarhat": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=800&fit=crop",
+            "Coorg": "https://images.unsplash.com/photo-1559628376-f3fe5f782a2e?w=600&h=800&fit=crop",
+            "Almaty": "https://images.unsplash.com/photo-1559628376-f3fe5f782a2e?w=600&h=800&fit=crop",
+            "Oslo": "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=600&h=800&fit=crop",
+            "Athens": "https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&h=800&fit=crop",
+            "Galapagos": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=800&fit=crop",
+            "Alexandria": "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=600&h=800&fit=crop",
+            "Mandi": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=600&h=800&fit=crop",
+            "Madrid": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&h=800&fit=crop",
+            "Sofia": "https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&h=800&fit=crop",
+            "Kyoto": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&h=800&fit=crop",
+            "Munich": "https://images.unsplash.com/photo-1595867818082-083862f3d630?w=600&h=800&fit=crop"
+        };
+        
+        const specificNames = [
+            "Netarhat", "Coorg", "Almaty", "Oslo", 
+            "Athens", "Galapagos", "Alexandria", "Mandi", 
+            "Madrid", "Sofia", "Kyoto", "Munich"
+        ];
+
+        let html = "";
+        specificNames.forEach(name => {
+            // Find detail if exists in DB, else mock it
+            let d = allDestinations.find(item => item.name.includes(name)) || { 
+                name: name, cat: "Popular", time: "Year-round", usp: "Top rated destination" 
+            };
+
+            const imgUrl = destinationImages[name];
+            
+            html += `
+                <div class="card" onclick="openWizard('${d.name}')" style="background-image: url('${imgUrl}'); background-size: cover; background-position: center;">
+                    <div class="card-overlay">
+                        <div class="card-tag">${d.cat.split('/')[0]}</div>
+                        <h3 class="card-title">${d.name}</h3>
+                        <div class="card-sub"><i class="far fa-calendar-alt"></i> ${d.time}</div>
+                    </div>
+                </div>
+            `;
+        });
+        grid.innerHTML = html;
+    }
+
+    function showAll() {
+        const container = document.getElementById("full-list-container");
+        let html = "";
+        allDestinations.forEach(d => {
+            html += `
+                <div class="list-item" onclick="selectFromList('${d.name}')">
+                    <div>
+                        <div class="list-name">${d.name}</div>
+                        <div class="list-meta">${d.cat} • Best: ${d.time}</div>
+                    </div>
+                    <div class="list-tag">View</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        openModal('all-destinations-modal');
+    }
+
+    function filterList(query) {
+        const container = document.getElementById("full-list-container");
+        const filtered = allDestinations.filter(d => d.name.toLowerCase().includes(query.toLowerCase()));
+        let html = "";
+        filtered.forEach(d => {
+            html += `
+                <div class="list-item" onclick="selectFromList('${d.name}')">
+                    <div>
+                        <div class="list-name">${d.name}</div>
+                        <div class="list-meta">${d.cat} • Best: ${d.time}</div>
+                    </div>
+                    <div class="list-tag">View</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function selectFromList(name) {
+        closeModal('all-destinations-modal');
+        openWizard(name);
+    }
+
+    // --- SEARCH ---
+    function handleSearch(e) { if(e.key === 'Enter') triggerSearch(); }
+    function triggerSearch() {
+        const term = document.getElementById("aiSearch").value.toLowerCase();
+        if(!term) return;
+        const found = allDestinations.find(d => d.name.toLowerCase().includes(term));
+        if(found) {
+            openWizard(found.name);
+        } else {
+            alert("Analyzing request with Gemini... Opening custom planner.");
+            openWizard("Custom Trip");
+        }
+    }
+
+    // --- MODAL LOGIC ---
+    function openWizard(dest) {
+        document.getElementById("wiz-dest").innerText = dest;
+        currentTrip.dest = dest;
+        openModal("wizard-modal");
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add("active");
+        // Reset wallet views if opening wallet
+        if(id === "wallet-modal") {
+            document.getElementById("payment-view").style.display = "none";
+            document.getElementById("approval-view").style.display = "none";
+        }
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).classList.remove("active");
+    }
+
+    // --- ITINERARY GENERATION ---
+    function generateItineraries() {
+        closeModal("wizard-modal");
+        
+        // Mock GenAI logic
+        const budget = document.getElementById("inp-budget").value || 25000;
+        const days = document.getElementById("inp-days").value || 3;
+        currentTrip.days = parseInt(days);
+        const base = parseInt(budget);
+        
+        const opts = [
+            { type: "Budget / Backpacker", cost: Math.floor(base * 0.6), desc: "Hostels, Public Transit, Street Food & Hidden Gems" },
+            { type: "Balanced / Standard", cost: Math.floor(base * 1.0), desc: "3★ Hotels, Private Cab, Sightseeing & Local Dining" },
+            { type: "Luxury / Premium", cost: Math.floor(base * 1.8), desc: "Resorts, Chauffeur, Fine Dining & Exclusive Tours" }
+        ];
+
+        let html = "";
+        opts.forEach((o, i) => {
+            const style = i === 1 ? "border-color:var(--primary); background:#f0f7ff;" : "";
+            html += `
+                <div class="opt-card" style="${style}" onclick="selectOption('${o.type}', ${o.cost})">
+                    <div class="opt-info">
+                        <div class="opt-tag">${o.type}</div>
+                        <h3 style="margin:5px 0; color:var(--text-main)">${o.desc.split(',')[0]} Experience</h3>
+                        <div style="font-size:0.9rem; color:#666;">${o.desc}</div>
+                    </div>
+                    <div class="opt-price">₹${o.cost.toLocaleString()}</div>
+                </div>
+            `;
+        });
+        
+        document.getElementById("options-container").innerHTML = html;
+        openModal("options-modal");
+    }
+
+    function selectOption(type, cost) {
+        closeModal("options-modal");
+        currentTrip.baseCost = cost;
+        currentTrip.guideCost = 0;
+        document.getElementById("guide-check").checked = false;
+        document.getElementById("guide-options").style.display = "none";
+        
+        renderTimeline(type);
+        updateTotal();
+        openModal("dashboard-modal");
+    }
+
+    function renderTimeline(type) {
+        const container = document.getElementById("dash-timeline");
+        let html = "";
+        const activities = [
+            {time:"Day 1 • 10:00 AM", title:"Arrival & Hotel Check-in", cost:0, dur:"1 hr"},
+            {time:"Day 1 • 02:00 PM", title:"City Sightseeing Tour", cost:500, dur:"3 hrs"},
+            {time:"Day 2 • 09:00 AM", title:"Adventure Activity / Museum", cost:1500, dur:"4 hrs"},
+            {time:"Day 2 • 07:00 PM", title:"Cultural Dinner Experience", cost:800, dur:"2 hrs"},
+            {time:"Day 3 • 11:00 AM", title:"Souvenir Shopping & Departure", cost:0, dur:"2 hrs"}
+        ];
+
+        activities.forEach(a => {
+            html += `
+                <div class="t-item">
+                    <div class="t-time">${a.time}</div>
+                    <div class="t-title">${a.title}</div>
+                    <div class="t-meta">
+                        <span class="pill"><i class="far fa-clock"></i> ${a.dur}</span>
+                        <span class="pill cost">Est. ₹${a.cost}</span>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // --- GUIDE LOGIC ---
+    function toggleGuide() {
+        const chk = document.getElementById("guide-check");
+        const area = document.getElementById("guide-options");
+        if(chk.checked) {
+            area.style.display = "block";
+            setGuide(800);
+        } else {
+            area.style.display = "none";
+            currentTrip.guideCost = 0;
+            updateTotal();
+        }
+    }
+
+    function setGuide(dailyRate) {
+        currentTrip.guideCost = dailyRate * currentTrip.days;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const total = currentTrip.baseCost + currentTrip.guideCost;
+        document.getElementById("dash-total").innerText = total.toLocaleString();
+    }
+
+    // --- WALLET LOGIC ---
+    function initiatePaymentFlow() {
+        closeModal("dashboard-modal");
+        
+        // Populate Approval View
+        const total = currentTrip.baseCost + currentTrip.guideCost;
+        document.getElementById("appr-dest").innerText = currentTrip.dest;
+        document.getElementById("appr-amt").innerText = total.toLocaleString();
+        document.getElementById("appr-bal").innerText = walletBalance.toLocaleString();
+        
+        // Show approval view inside wallet modal
+        document.getElementById("approval-view").style.display = "block";
+        openModal("wallet-modal");
+    }
+
+    function cancelPayment() {
+        document.getElementById("approval-view").style.display = "none";
+        alert("Transaction Cancelled by User.");
+    }
+
+    function confirmPayment() {
+        const total = currentTrip.baseCost + currentTrip.guideCost;
+        
+        if(walletBalance >= total) {
+            // Deduct
+            walletBalance -= total;
+            document.getElementById("wallet-bal").innerText = walletBalance.toLocaleString();
+            
+            // Add to history
+            const hist = document.getElementById("transaction-list");
+            const newTxn = `
+                <div class="trans-item">
+                    <div style="display:flex; align-items:center;">
+                        <div class="trans-icon" style="background:#e3f9e5; color:#155724"><i class="fas fa-check"></i></div>
+                        <div>
+                            <div style="font-weight:700; color:var(--text-main);">Trip to ${currentTrip.dest}</div>
+                            <div style="font-size:0.8rem; color:#888">Just now</div>
+                        </div>
+                    </div>
+                    <div style="font-weight:bold; color:var(--text-main);">- ₹${total.toLocaleString()}</div>
+                </div>
+            `;
+            hist.innerHTML = newTxn + hist.innerHTML;
+
+            // Hide approval view
+            document.getElementById("approval-view").style.display = "none";
+            
+            alert("Payment Approved! ₹" + total.toLocaleString() + " deducted from wallet.\n\nBooking Confirmed! 🎉");
+        } else {
+            alert("Insufficient Balance! Please Add Money.");
+        }
+    }
+
+    function addMoney() {
+        const amount = prompt("Enter amount to add:", "5000");
+        if(amount) {
+            walletBalance += parseInt(amount);
+            document.getElementById("wallet-bal").innerText = walletBalance.toLocaleString();
+            
+            const hist = document.getElementById("transaction-list");
+            const newTxn = `
+                <div class="trans-item">
+                    <div style="display:flex; align-items:center;">
+                        <div class="trans-icon"><i class="fas fa-plus"></i></div>
+                        <div>
+                            <div style="font-weight:700; color:var(--text-main);">Money Added</div>
+                            <div style="font-size:0.8rem; color:#888">Just now</div>
+                        </div>
+                    </div>
+                    <div style="color:var(--success); font-weight:bold;">+ ₹${parseInt(amount).toLocaleString()}</div>
+                </div>
+            `;
+            hist.innerHTML = newTxn + hist.innerHTML;
+        }
+    }
+
+    // --- VOICE ---
+    function toggleVoice() {
+        const btn = document.getElementById("voiceBtn");
+        btn.classList.toggle("listening");
+        if(btn.classList.contains("listening")) {
+            setTimeout(() => {
+                alert("Listening... (Voice API Simulation)\nTry saying: 'Plan a trip to Kerala'");
+                btn.classList.remove("listening");
+            }, 2000);
+        }
+    }
+</script>
+</body>
+</html>
+
